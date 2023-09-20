@@ -1,6 +1,7 @@
 package com.cst438.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,7 +34,9 @@ public class AssignmentController {
 	CourseRepository courseRepository;
 	
 	@GetMapping("/assignment")
-	public AssignmentDTO[] getAllAssignmentsForInstructor() {
+	public AssignmentDTO[] getAllAssignmentsForInstructor(@RequestParam("name") Optional<String> name,
+			 @RequestParam("dueDate") Optional<String> dueDate,
+			 @RequestParam("course") Optional<String> course) {
 		// get all assignments for this instructor
 		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
 		List<Assignment> assignments = assignmentRepository.findByEmail(instructorEmail);
@@ -51,4 +55,27 @@ public class AssignmentController {
 	}
 	
 	// TODO create CRUD methods for Assignment
+	// read
+	
+	// create
+	@PostMapping("/assignment")
+	public int createAssignment(@RequestBody AssignmentDTO assignmentDTO) {
+		Assignment as = new Assignment();
+		return 0;
+	}
+	
+	// delete
+	@DeleteMapping("/assignment/{assignment_id}")
+	public void deleteAssignment(@PathVariable("assignment_id") int assignment_id, 
+								 @RequestParam("force") Optional<String> force) {
+		//for (int i=0; i < )
+	}
+	
+	// update
+	@PostMapping("/assignment/{assignment_id")
+	public void updateAssignment(@RequestBody AssignmentDTO assignmentDTO) {
+		
+	}
+	
+	
 }

@@ -61,6 +61,8 @@ public class AssignmentController {
 	@PostMapping("/assignment")
 	public int createAssignment(@RequestBody AssignmentDTO assignmentDTO) {
 		Assignment as = new Assignment();
+		as.setName(assignmentDTO.assignmentName());
+		as.setId(assignmentDTO.id());
 		return 0;
 	}
 	

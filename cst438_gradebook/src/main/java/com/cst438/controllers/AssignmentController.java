@@ -60,25 +60,47 @@ public class AssignmentController {
 	// create
 	@PostMapping("/assignment")
 	public int createAssignment(@RequestBody AssignmentDTO assignmentDTO) {
-		Assignment assignment = new Assignment();
-        //assignment.setName(assignmentDTO.getAssignmentName());
+		Assignment as = new Assignment();
+		Course cs = new Course();
+		
+		cs.setTitle(assignmentDTO.courseTitle());
+		as.setId(assignmentDTO.id());
+		as.setName(assignmentDTO.assignmentName());
+        as.setCourse(cs);
         
+        
+        return as.getId();
 	}
 	
 	// delete
 	@DeleteMapping("/assignment/{assignment_id}")
 	public void deleteAssignment(@PathVariable("assignment_id") int assignment_id, 
 								 @RequestParam("force") Optional<String> force) {		
-		assignmentRepository.deleteById(assignment_id);
+		Assignment as = assignmentRepository.findById(assignment_id).orElseThrow(() -> 
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+		
+		boolean e = courseRepository.findById(assignment_id).isEmpty();
+		
+		if (e && force.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "assignment_id invalid");
+		}
+		
+		else {
+			assignmentRepository.delete(as);
+		}
 	}
 	
 	// update
 	@PostMapping("/assignment/{assignment_id}")
 	public void updateAssignment(@RequestBody AssignmentDTO assignmentDTO, 
 								 @PathVariable("assignment_id") int assignment_id) {
-        Optional<Assignment> updatedAssignment = assignmentRepository.findById(assignment_id);
-        
+		Assignment as = assignmentRepository.findById(assignment_id).orElseThrow(() -> 
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
 		
+		as.setId(assignmentDTO.id());
+		as.setName(assignmentDTO.assignmentName());
+		
+		assignmentRepository.save(as);
 	}
 	
 	

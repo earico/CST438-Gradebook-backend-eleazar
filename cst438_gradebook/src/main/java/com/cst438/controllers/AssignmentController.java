@@ -60,22 +60,24 @@ public class AssignmentController {
 	// create
 	@PostMapping("/assignment")
 	public int createAssignment(@RequestBody AssignmentDTO assignmentDTO) {
-		Assignment as = new Assignment();
-		as.setName(assignmentDTO.assignmentName());
-		as.setId(assignmentDTO.id());
-		return 0;
+		Assignment assignment = new Assignment();
+        //assignment.setName(assignmentDTO.getAssignmentName());
+        
 	}
 	
 	// delete
 	@DeleteMapping("/assignment/{assignment_id}")
 	public void deleteAssignment(@PathVariable("assignment_id") int assignment_id, 
-								 @RequestParam("force") Optional<String> force) {
-		//for (int i=0; i < )
+								 @RequestParam("force") Optional<String> force) {		
+		assignmentRepository.deleteById(assignment_id);
 	}
 	
 	// update
-	@PostMapping("/assignment/{assignment_id")
-	public void updateAssignment(@RequestBody AssignmentDTO assignmentDTO) {
+	@PostMapping("/assignment/{assignment_id}")
+	public void updateAssignment(@RequestBody AssignmentDTO assignmentDTO, 
+								 @PathVariable("assignment_id") int assignment_id) {
+        Optional<Assignment> updatedAssignment = assignmentRepository.findById(assignment_id);
+        
 		
 	}
 	

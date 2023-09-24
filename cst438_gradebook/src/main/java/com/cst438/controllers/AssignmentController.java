@@ -34,9 +34,7 @@ public class AssignmentController {
 	CourseRepository courseRepository;
 	
 	@GetMapping("/assignment")
-	public AssignmentDTO[] getAllAssignmentsForInstructor(@RequestParam("name") Optional<String> name,
-			 @RequestParam("dueDate") Optional<String> dueDate,
-			 @RequestParam("course") Optional<String> course) {
+	public AssignmentDTO[] getAllAssignmentsForInstructor() {
 		// get all assignments for this instructor
 		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
 		List<Assignment> assignments = assignmentRepository.findByEmail(instructorEmail);
@@ -56,10 +54,21 @@ public class AssignmentController {
 	
 	// TODO create CRUD methods for Assignment
 	// read
+	@GetMapping("/assignment/{id}")
+	public AssignmentDTO getAssignment(@PathVariable("id") int id)  {
+		// check that assignment belongs to the instructor
+		String instructorEmail = "dwisneski@csumb.edu";
+		if (assignmentRepository.findByEmail(instructorEmail)) {
+			
+		}
+		// return Assignment data for the given assignment 
+		// if assignment not found, return HTTP status code 404
+	}
 	
 	// create
 	@PostMapping("/assignment")
 	public int createAssignment(@RequestBody AssignmentDTO assignmentDTO) {
+		String instructorEmail = "dwisneski@csumb.edu";
 		Assignment as = new Assignment();
 		Course cs = new Course();
 		
@@ -73,13 +82,14 @@ public class AssignmentController {
 	}
 	
 	// delete
-	@DeleteMapping("/assignment/{assignment_id}")
-	public void deleteAssignment(@PathVariable("assignment_id") int assignment_id, 
+	@DeleteMapping("/assignment/{id}")
+	public void deleteAssignment(@PathVariable("id") int id, 
 								 @RequestParam("force") Optional<String> force) {		
-		Assignment as = assignmentRepository.findById(assignment_id).orElseThrow(() -> 
+		Assignment as = assignmentRepository.findById(id).orElseThrow(() -> 
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+		List<AssignmentGrade> assignmentGrades = assignmentRepository.
 		
-		boolean e = courseRepository.findById(assignment_id).isEmpty();
+		boolean e = courseRepository.findById(id).isEmpty();
 		
 		if (e && force.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "assignment_id invalid");
@@ -91,10 +101,10 @@ public class AssignmentController {
 	}
 	
 	// update
-	@PostMapping("/assignment/{assignment_id}")
+	@PostMapping("/assignment/{id}")
 	public void updateAssignment(@RequestBody AssignmentDTO assignmentDTO, 
-								 @PathVariable("assignment_id") int assignment_id) {
-		Assignment as = assignmentRepository.findById(assignment_id).orElseThrow(() -> 
+								 @PathVariable("assignment_id") int id) {
+		Assignment as = assignmentRepository.findById(id).orElseThrow(() -> 
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
 		
 		as.setId(assignmentDTO.id());

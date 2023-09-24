@@ -92,10 +92,11 @@ public class AssignmentController {
 		Course cs = courseRepository.findById(adto.courseId()).orElseThrow(() ->
 		new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
 		
-		//as.setId(adto.id());
-		as.setName(adto.assignmentName());
-        as.setDueDate(Date.valueOf(adto.dueDate()));
-        
+		if (cs.getInstructor().equals(instructorEmail)) {
+			as.setName(adto.assignmentName());
+	        as.setDueDate(Date.valueOf(adto.dueDate()));
+	        as.setCourse(cs);
+		}
         assignmentRepository.save(as);
         return as.getId();
         // check that course id in AssignmentDTO exists and belongs 

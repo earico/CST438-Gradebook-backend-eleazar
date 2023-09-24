@@ -87,7 +87,6 @@ public class AssignmentController {
 								 @RequestParam("force") Optional<String> force) {		
 		Assignment as = assignmentRepository.findById(id).orElseThrow(() -> 
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
-		List<AssignmentGrade> assignmentGrades = assignmentRepository.
 		
 		boolean e = courseRepository.findById(id).isEmpty();
 		

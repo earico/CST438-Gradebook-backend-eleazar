@@ -1,5 +1,6 @@
 package com.cst438.controllers;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.Assignment;
 import com.cst438.domain.AssignmentDTO;
+import com.cst438.domain.AssignmentGrade;
+import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.AssignmentRepository;
 import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
@@ -29,6 +32,9 @@ public class AssignmentController {
 	
 	@Autowired
 	AssignmentRepository assignmentRepository;
+	
+	@Autowired
+	AssignmentGradeRepository assignmentGradeRepository;
 	
 	@Autowired
 	CourseRepository courseRepository;
@@ -58,27 +64,45 @@ public class AssignmentController {
 	public AssignmentDTO getAssignment(@PathVariable("id") int id)  {
 		// check that assignment belongs to the instructor
 		String instructorEmail = "dwisneski@csumb.edu";
-		if (assignmentRepository.findByEmail(instructorEmail)) {
-			
+		Assignment as = assignmentRepository.findById(id).orElseThrow(() -> 
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+		Course course = as.getCourse();
+		
+		if (course.getInstructor().equals(instructorEmail)) {
+			AssignmentDTO adto = new AssignmentDTO(
+					as.getId(), 
+					as.getName(), 
+					as.getDueDate().toString(), 
+					as.getCourse().getTitle(), 
+					as.getCourse().getCourse_id()
+					);
+			return adto;
 		}
-		// return Assignment data for the given assignment 
-		// if assignment not found, return HTTP status code 404
+		throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Assignment does not belong to the instructor");
+		// check that assignment belongs to the instructor
+	    // return Assignment data for the given assignment 
+	    // if assignment not found, return HTTP status code 404
 	}
 	
 	// create
 	@PostMapping("/assignment")
-	public int createAssignment(@RequestBody AssignmentDTO assignmentDTO) {
+	public int createAssignment(@RequestBody AssignmentDTO adto) {
 		String instructorEmail = "dwisneski@csumb.edu";
 		Assignment as = new Assignment();
-		Course cs = new Course();
+		Course cs = courseRepository.findById(adto.courseId()).orElseThrow(() ->
+		new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
 		
-		cs.setTitle(assignmentDTO.courseTitle());
-		as.setId(assignmentDTO.id());
-		as.setName(assignmentDTO.assignmentName());
-        as.setCourse(cs);
+		//as.setId(adto.id());
+		as.setName(adto.assignmentName());
+        as.setDueDate(Date.valueOf(adto.dueDate()));
         
-        
+        assignmentRepository.save(as);
         return as.getId();
+        // check that course id in AssignmentDTO exists and belongs 
+        //  to this instructor
+        // then create a new Assignment Entity and save to database
+        // return the assignment id of the new assignment
+
 	}
 	
 	// delete
@@ -87,30 +111,49 @@ public class AssignmentController {
 								 @RequestParam("force") Optional<String> force) {		
 		Assignment as = assignmentRepository.findById(id).orElseThrow(() -> 
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+		String insEmail = "dwisneski@csumb.edu";
+		Course course = as.getCourse();
+		Optional<AssignmentGrade> gd = assignmentGradeRepository.findById(id);
 		
-		boolean e = courseRepository.findById(id).isEmpty();
-		
-		if (e && force.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "assignment_id invalid");
+		if (course != null) {
+			String ins = course.getInstructor();
+			if (ins.equals(insEmail)) {
+				if (gd.isEmpty() || force.isEmpty()) {
+					assignmentRepository.delete(as);
+				}
+				
+				else {
+					assignmentRepository.delete(as);
+				}
+			}
 		}
 		
-		else {
-			assignmentRepository.delete(as);
-		}
+		
+		// check assignment belongs to this instructor
+		// delete assignment if there are no grades.
+		// if there are grades for the assignment, delete the 
+		// assignment only if "force" is specified
+
 	}
 	
 	// update
 	@PostMapping("/assignment/{id}")
-	public void updateAssignment(@RequestBody AssignmentDTO assignmentDTO, 
+	public void updateAssignment(@RequestBody AssignmentDTO adto, 
 								 @PathVariable("assignment_id") int id) {
 		Assignment as = assignmentRepository.findById(id).orElseThrow(() -> 
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
-		
-		as.setId(assignmentDTO.id());
-		as.setName(assignmentDTO.assignmentName());
-		
+		String insEmail = "dwisneski@csumb.edu";
+		Course course = as.getCourse();		
+		if (course != null) {
+			String ins = course.getInstructor();
+			if (ins.equals(insEmail)){
+				as.setId(adto.id());
+				as.setName(adto.assignmentName());
+				as.setDueDate(Date.valueOf(adto.dueDate()));
+			}
+		}
+		// check assignment belongs to a course for this instructor
+		// update assignment with data in AssignmentDTO
 		assignmentRepository.save(as);
 	}
-	
-	
 }

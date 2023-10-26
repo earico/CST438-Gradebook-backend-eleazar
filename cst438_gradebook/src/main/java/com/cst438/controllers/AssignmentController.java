@@ -62,26 +62,18 @@ public class AssignmentController {
 	// read
 	@GetMapping("/assignment/{id}")
 	public AssignmentDTO getAssignment(@PathVariable("id") int id)  {
-		// check that assignment belongs to the instructor
-		String instructorEmail = "dwisneski@csumb.edu";
-		Assignment as = assignmentRepository.findById(id).orElseThrow(() -> 
-        new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
-		Course course = as.getCourse();
-		
-		if (course.getInstructor().equals(instructorEmail)) {
-			AssignmentDTO adto = new AssignmentDTO(
-					as.getId(), 
-					as.getName(), 
-					as.getDueDate().toString(), 
-					as.getCourse().getTitle(), 
-					as.getCourse().getCourse_id()
-					);
-			return adto;
+		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email)
+		Assignment a = assignmentRepository.findById(id).orElse(null);
+		if (a==null) {
+			throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "assignment not found "+id);
 		}
-		throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Assignment does not belong to the instructor");
-		// check that assignment belongs to the instructor
-	    // return Assignment data for the given assignment 
-	    // if assignment not found, return HTTP status code 404
+		// check that assignment is for a course of this instructor
+		if (! a.getCourse().getInstructor().equals(instructorEmail)) {
+			throw  new ResponseStatusException( HttpStatus.FORBIDDEN, "not authorized "+id);
+		}
+		AssignmentDTO adto = new AssignmentDTO(a.getId(), a.getName(), a.getDueDate().toString(), a.getCourse().getTitle(), a.getCourse().getCourse_id());
+		return adto;
+
 	}
 	
 	// create
